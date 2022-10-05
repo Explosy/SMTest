@@ -54,11 +54,14 @@ namespace SMTest.ViewModels
         public ObservableCollection<FreePicket> FreePickets { get; set; }
         public ObservableCollection<BusyPicket> BusyPickets { get; set; }
 
-        private IPicket selectedPicketToChange;
-        public IPicket SelectedPicketToChange
+        private IPicket selectedPicket;
+        /// <summary>
+        /// Свойство, содержащее информацию о выбранном пикете
+        /// </summary>
+        public IPicket SelectedPicket
         {
-            get => selectedPicketToChange;
-            set => SetProperty(ref selectedPicketToChange, value);
+            get => selectedPicket;
+            set => SetProperty(ref selectedPicket, value);
         }
 
         #endregion
@@ -84,6 +87,8 @@ namespace SMTest.ViewModels
             AddAreaCommand = new ActionCommand(OnAddAreaCommandExecuted, CanAddAreaCommandExecute);
             DeleteAreaCommand = new ActionCommand(OnDeleteAreaCommandExecuted, CanDeleteAreaCommandExecute);
             #endregion
+            
+            ChangePicketCargoCommand = new ActionCommand(OnChangePicketCargoCommandExecuted, CanChangePicketCargoCommandExecute);
 
             #endregion
         }
@@ -124,7 +129,14 @@ namespace SMTest.ViewModels
             FreePickets.Clear();
             using (SoftMasterDBContext context = new SoftMasterDBContext())
             {
-                FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId)));
+
+                //var newFreePicketsData = context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId));
+
+                //var newFreePicketsData = context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId))
+                //                                            .GroupBy(p => p.PicketNumber)
+                //                                            .Select(g => g.OrderByDescending(p => p.DateStart)
+                //                                                          .First());
+                //if (newFreePicketsData.Any()) FreePickets.AddRange(newFreePicketsData);
             }
         }
         #endregion
@@ -235,6 +247,46 @@ namespace SMTest.ViewModels
             catch (Exception e)
             {
                 MessageBox.Show("В процессе удаления площадки произошли ошибки.", "Результат");
+                MessageBox.Show(e.Message, "Результат");
+            }
+        }
+        #endregion
+
+        #region ChangePicketCargoCommand
+        public ICommand ChangePicketCargoCommand { get; }
+        private bool CanChangePicketCargoCommandExecute(object arg) => !(selectedPicket == null);
+        private void OnChangePicketCargoCommandExecuted(object arg)
+        {
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    if (selectedPicket is BusyPicket)
+                    {
+                        BusyPicket newPicket = new BusyPicket()
+                        {
+                            Cargo = int.Parse((string)arg),
+                            PicketNumber = selectedPicket.PicketNumber,
+                            AreaId = ((BusyPicket)selectedPicket).AreaId
+                        };
+                    }
+                    else
+                    {
+                        FreePicket newPicket = new FreePicket()
+                        {
+                            Cargo = int.Parse((string)arg),
+                            PicketNumber = selectedPicket.PicketNumber,
+                            WareHouseId = ((FreePicket)selectedPicket).WareHouseId
+                        };
+                    }
+                    context.SaveChanges();
+                    SelectedPicket = null;
+                }
+                MessageBox.Show("Вес успешно изменен", "Результат");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("В процессе изменения веса произошли ошибки.", "Результат");
                 MessageBox.Show(e.Message, "Результат");
             }
         }

@@ -74,7 +74,7 @@
                     CommandParameter="{Binding SelectedArea}"
                     Style="{StaticResource LoadButton}"/>
             <GroupBox Grid.Row="1" Header="Пикеты площадки">
-                <ListBox SelectedItem="" DisplayMemberPath="PicketNumber"/>
+                <ListBox ItemsSource="{Binding BusyPickets}" DisplayMemberPath="PicketNumber" SelectedItem="{Binding SelectedPicket}"/>
             </GroupBox>
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Command=""
@@ -93,7 +93,7 @@
                     CommandParameter="{Binding SelectedWareHouse}"
                     Style="{StaticResource LoadButton}"/>
             <GroupBox Grid.Row="4" Header="Свободные пикеты">
-                <ListBox ItemsSource="{Binding FreePickets}" SelectedItem="" DisplayMemberPath="PicketNumber"/>
+                <ListBox ItemsSource="{Binding FreePickets}" SelectedItem="{Binding SelectedPicket}" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
         </Grid>
         <UniformGrid Grid.Column="2" Rows="1">
@@ -109,13 +109,14 @@
                 <Border BorderBrush="#7F000000" BorderThickness="0,0.5,0,0">
                     <StackPanel x:Name="PicketInfoPanel">
                         <TextBlock Text="Информация по выбранному пикету"/>
-                        <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
+                        <TextBlock Text="{Binding SelectedPicket.PicketNumber}" Style="{StaticResource DefaultTextBlock}"/>
                         <TextBlock Text="Груз (т)" />
                         <TextBox x:Name="CargoValue" Style="{StaticResource DefaultTextBox}"
-                         Text="" />
-                        <Button Content="Сохранить данные о грузе" Style="{StaticResource DefaultButton}"
-                        Command=""
-                        CommandParameter=""/>
+                                                     Text="{Binding SelectedPicket.Cargo}" />
+                        <Button Content="Сохранить данные о грузе"
+                                Command="{Binding ChangePicketCargoCommand}"
+                                CommandParameter="{Binding Text, ElementName=CargoValue}"
+                                Style="{StaticResource DefaultButton}"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
