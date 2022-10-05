@@ -25,8 +25,6 @@ namespace SMTest.Views
         public MainWindow()
         {
             InitializeComponent();
-
-            
         }
     }
 }

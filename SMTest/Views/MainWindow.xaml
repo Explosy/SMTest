@@ -7,7 +7,7 @@
         xmlns:fa="http://schemas.fontawesome.com/icons/"
         xmlns:vm="clr-namespace:SMTest.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="550" Width="800">
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
@@ -21,18 +21,21 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Bottom" >
                     <TextBox Style="{StaticResource DefaultTextBox}"
-                             Text=""/>
+                             Text="{Binding WareHouseName, UpdateSourceTrigger=PropertyChanged}"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                        <Button Content="Добавить склад" Command=""
-                                                         CommandParameter=""
+                        <Button Content="Добавить склад" Command="{Binding AddWareHouseCommand}"
+                                                         CommandParameter="{Binding WareHouseName}"
                                                          Style="{StaticResource DefaultButton}"/>
-                        <Button Content="Удалить склад" Command=""
-                                                        CommandParameter=""
+                        <Button Content="Удалить склад" Command="{Binding DeleteWareHouseCommand}"
+                                                        CommandParameter="{Binding SelectedWareHouse}"
                                                         Style="{StaticResource DefaultButton}"/>
                     </StackPanel>
                 </StackPanel>
+                <Button DockPanel.Dock="Top" Content="Загрузить информацию о складах"
+                        Command="{Binding LoadWareHouseCommand}"            
+                        Style="{StaticResource DefaultButton}"/>
                 <GroupBox Header="Склады">
-                    <ListBox ItemsSource="{Binding WareHouses}"  DisplayMemberPath="Title" SelectedItem=""/>
+                    <ListBox ItemsSource="{Binding WareHouses}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedWareHouse}"/>
                 </GroupBox>
             </DockPanel>
             <DockPanel>
@@ -48,8 +51,12 @@
                                                             Style="{StaticResource DefaultButton}"/>
                     </StackPanel>
                 </StackPanel>
+                <Button DockPanel.Dock="Top" Content="Загрузить информацию о площадках"
+                        Command="{Binding LoadAreasCommand}"
+                        CommandParameter="{Binding SelectedWareHouse}"
+                        Style="{StaticResource DefaultButton}"/>
                 <GroupBox Header="Площадки">
-                    <ListBox DisplayMemberPath="Title" SelectedItem=""/>
+                    <ListBox ItemsSource="{Binding Areas}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedArea}"/>
                 </GroupBox>
             </DockPanel>
         </UniformGrid>
@@ -59,6 +66,7 @@
                 <RowDefinition Height="50"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+            
             <GroupBox Grid.Row="0" Header="Пикеты площадки">
                 <ListBox SelectedItem="" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
@@ -75,7 +83,7 @@
                 </Button>
             </StackPanel>
             <GroupBox Grid.Row="2" Header="Свободные пикеты">
-                <ListBox SelectedItem="" DisplayMemberPath="PicketNumber"/>
+                <ListBox ItemsSource="{Binding FreePickets}" SelectedItem="" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
         </Grid>
         <UniformGrid Grid.Column="2" Rows="1">
@@ -88,17 +96,18 @@
                     <TextBlock Text="Пикеты" />
                     <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
                 </StackPanel>
-
-                <StackPanel x:Name="PicketInfoPanel">
-                    <TextBlock Text="Информация по выбранному пикету"/>
-                    <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
-                    <TextBlock Text="Груз (т)" />
-                    <TextBox x:Name="CargoValue" Style="{StaticResource DefaultTextBox}"
+                <Border BorderBrush="#7F000000" BorderThickness="0,0.5,0,0">
+                    <StackPanel x:Name="PicketInfoPanel">
+                        <TextBlock Text="Информация по выбранному пикету"/>
+                        <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
+                        <TextBlock Text="Груз (т)" />
+                        <TextBox x:Name="CargoValue" Style="{StaticResource DefaultTextBox}"
                          Text="" />
-                    <Button Content="Сохранить данные о грузе" Style="{StaticResource DefaultButton}"
+                        <Button Content="Сохранить данные о грузе" Style="{StaticResource DefaultButton}"
                         Command=""
                         CommandParameter=""/>
-                </StackPanel>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </UniformGrid>
     </Grid>

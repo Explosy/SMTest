@@ -4,12 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SMTest.Views"
-        xmlns:vm="clr-namespace:SMTest.ViewModels"
         mc:Ignorable="d"
         Title="Добавление склада" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen">
-    <Window.DataContext>
-        <vm:WareHouseAddViewModel/>
-    </Window.DataContext>
+
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
@@ -20,13 +17,14 @@
         </Grid.RowDefinitions>
 
         <TextBlock>Введите номер первого пикета склада</TextBlock>
-        <TextBox Text="{Binding FirstPicketNumber, UpdateSourceTrigger=PropertyChanged}" 
+        <TextBox x:Name="FirstPicketNumberBox" Text="0"
                  Grid.Row="1" MinWidth="250" KeyDown="TextBox_KeyDown"/>
         <TextBlock Grid.Row="2">Введите количество пикетов на складе</TextBlock>
-        <TextBox Text="{Binding PicketsCount, UpdateSourceTrigger=PropertyChanged}"
+        <TextBox x:Name="PicketsCountNumberBox" Text="0"
                  Grid.Row="3" MinWidth="250" KeyDown="TextBox_KeyDown"/>
         <WrapPanel Grid.Row="4" HorizontalAlignment="Right" Margin="0,15,0,0">
-            <Button IsDefault="True" MinWidth="60" Margin="0,0,10,0">OK</Button>
+            <Button IsDefault="True" Click="Accept_Click"
+                    MinWidth="60" Margin="0,0,10,0">OK</Button>
             <Button IsCancel="True" MinWidth="60">Отмена</Button>
         </WrapPanel>
     </Grid>

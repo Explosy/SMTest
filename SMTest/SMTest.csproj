@@ -25,6 +25,7 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Resources\Styles\" />
+    <Folder Include="Resources\BaseCommand\" />
   </ItemGroup>
 
 </Project>
