@@ -33,7 +33,7 @@
                 </StackPanel>
                 <Button DockPanel.Dock="Top" Content="Загрузить информацию о складах"
                         Command="{Binding LoadWareHouseCommand}"            
-                        Style="{StaticResource DefaultButton}"/>
+                        Style="{StaticResource LoadButton}"/>
                 <GroupBox Header="Склады">
                     <ListBox ItemsSource="{Binding WareHouses}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedWareHouse}"/>
                 </GroupBox>
@@ -41,20 +41,20 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Bottom" >
                     <TextBox Style="{StaticResource DefaultTextBox}"
-                             Text=""/>
+                             Text="{Binding AreaName}"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                        <Button Content="Добавить площадку" Command=""
-                                                            CommandParameter=""
+                        <Button Content="Добавить площадку" Command="{Binding AddAreaCommand}"
+                                                            CommandParameter="{Binding AreaName}"
                                                             Style="{StaticResource DefaultButton}"/>
-                        <Button Content="Удалить площадку" Command=""
-                                                            CommandParameter=""
+                        <Button Content="Удалить площадку" Command="{Binding DeleteAreaCommand}"
+                                                            CommandParameter="{Binding SelectedArea}"
                                                             Style="{StaticResource DefaultButton}"/>
                     </StackPanel>
                 </StackPanel>
                 <Button DockPanel.Dock="Top" Content="Загрузить информацию о площадках"
                         Command="{Binding LoadAreasCommand}"
                         CommandParameter="{Binding SelectedWareHouse}"
-                        Style="{StaticResource DefaultButton}"/>
+                        Style="{StaticResource LoadButton}"/>
                 <GroupBox Header="Площадки">
                     <ListBox ItemsSource="{Binding Areas}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedArea}"/>
                 </GroupBox>
@@ -62,27 +62,37 @@
         </UniformGrid>
         <Grid  Grid.Column="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="50"/>
+                <RowDefinition Height="30"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            
-            <GroupBox Grid.Row="0" Header="Пикеты площадки">
+
+            <Button Content="Загрузить информацию о пикетах"
+                    Command="{Binding LoadBusyPicketsCommand}"
+                    CommandParameter="{Binding SelectedArea}"
+                    Style="{StaticResource LoadButton}"/>
+            <GroupBox Grid.Row="1" Header="Пикеты площадки">
                 <ListBox SelectedItem="" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Style="{StaticResource SquareButton}"
-                        Command=""
-                        CommandParameter="">
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Command=""
+                        CommandParameter=""
+                        Style="{StaticResource SquareButton}">
                     <fa:ImageAwesome Icon="Solid_ArrowUp" Height="15"></fa:ImageAwesome>
                 </Button>
-                <Button Style="{StaticResource SquareButton}"
-                        Command=""
-                        CommandParameter="">
+                <Button Command=""
+                        CommandParameter=""
+                        Style="{StaticResource SquareButton}">
                     <fa:ImageAwesome Icon="Solid_ArrowDown" Height="15"></fa:ImageAwesome>
                 </Button>
             </StackPanel>
-            <GroupBox Grid.Row="2" Header="Свободные пикеты">
+            <Button Grid.Row="3"  Content="Загрузить информацию о пикетах"
+                    Command="{Binding LoadFreePicketsCommand}"
+                    CommandParameter="{Binding SelectedWareHouse}"
+                    Style="{StaticResource LoadButton}"/>
+            <GroupBox Grid.Row="4" Header="Свободные пикеты">
                 <ListBox ItemsSource="{Binding FreePickets}" SelectedItem="" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
         </Grid>

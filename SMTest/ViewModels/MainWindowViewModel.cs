@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.EntityFrameworkCore;
 using Prism.Mvvm;
+using SMTest.Models;
 using SMTest.Models.DB;
 using SMTest.Views;
 
@@ -15,7 +14,7 @@ namespace SMTest.ViewModels
     {
         #region WareHouse
         public ObservableCollection<WareHouse> WareHouses { get; set; }
-        
+
         private WareHouse selectedWareHouse;
         /// <summary>
         /// Свойство, содержащее информацию о выбранном складе
@@ -26,6 +25,9 @@ namespace SMTest.ViewModels
             set
             {
                 SetProperty(ref selectedWareHouse, value);
+                Areas.Clear();
+                BusyPickets.Clear();
+                FreePickets.Clear();
             }
         }
         #endregion
@@ -47,25 +49,43 @@ namespace SMTest.ViewModels
         }
 
         #endregion
+
         #region Pickets
         public ObservableCollection<FreePicket> FreePickets { get; set; }
+        public ObservableCollection<BusyPicket> BusyPickets { get; set; }
+
+        private IPicket selectedPicketToChange;
+        public IPicket SelectedPicketToChange
+        {
+            get => selectedPicketToChange;
+            set => SetProperty(ref selectedPicketToChange, value);
+        }
+
         #endregion
         public MainWindowViewModel()
         {
             WareHouses = new ObservableCollection<WareHouse>();
             Areas = new ObservableCollection<Area>();
+            BusyPickets = new ObservableCollection<BusyPicket>();
             FreePickets = new ObservableCollection<FreePicket>();
 
             #region Create Commands
+
+            #region Load Commands
             LoadWareHouseCommand = new ActionCommand(OnLoadWareHouseCommandExecuted, CanLoadWareHouseCommandExecute);
             LoadAreasCommand = new ActionCommand(OnLoadAreasCommandExecuted, CanLoadAreasCommandExecute);
             LoadFreePicketsCommand = new ActionCommand(OnLoadFreePicketsCommandExecuted, CanLoadFreePicketsCommandExecute);
-
-            AddWareHouseCommand = new ActionCommand(OnAddWareHouseCommandExecuted, CanAddWareHouseCommandExecute);
-            DeleteWareHouseCommand = new ActionCommand(OnDeleteWareHouseCommandExecuted, CanDeleteWareHouseCommandExecute);
-            
+            LoadBusyPicketsCommand = new ActionCommand(OnLoadBusyPicketsCommandExecuted, CanLoadBusyPicketsCommandExecute);
             #endregion
 
+            #region Add/Delete Commands
+            AddWareHouseCommand = new ActionCommand(OnAddWareHouseCommandExecuted, CanAddWareHouseCommandExecute);
+            DeleteWareHouseCommand = new ActionCommand(OnDeleteWareHouseCommandExecuted, CanDeleteWareHouseCommandExecute);
+            AddAreaCommand = new ActionCommand(OnAddAreaCommandExecuted, CanAddAreaCommandExecute);
+            DeleteAreaCommand = new ActionCommand(OnDeleteAreaCommandExecuted, CanDeleteAreaCommandExecute);
+            #endregion
+
+            #endregion
         }
 
         #region Commands
@@ -75,8 +95,6 @@ namespace SMTest.ViewModels
         private bool CanLoadWareHouseCommandExecute(object arg) => true;
         private void OnLoadWareHouseCommandExecuted(object arg)
         {
-            //Обнуление поля имени нового склада
-            WareHouseName = "";
             WareHouses.Clear();
             using (SoftMasterDBContext context = new SoftMasterDBContext())
             {
@@ -87,7 +105,7 @@ namespace SMTest.ViewModels
 
         #region LoadAreasCommand
         public ICommand LoadAreasCommand { get; }
-        private bool CanLoadAreasCommandExecute(object arg) => !(arg==null);
+        private bool CanLoadAreasCommandExecute(object arg) => !(arg == null);
         private void OnLoadAreasCommandExecuted(object arg)
         {
             Areas.Clear();
@@ -103,9 +121,23 @@ namespace SMTest.ViewModels
         private bool CanLoadFreePicketsCommandExecute(object arg) => !(arg == null);
         private void OnLoadFreePicketsCommandExecuted(object arg)
         {
+            FreePickets.Clear();
             using (SoftMasterDBContext context = new SoftMasterDBContext())
             {
-                FreePickets.AddRange(context.FreePickets.Where(a => a.WareHouseId.Equals(selectedWareHouse.WareHouseId)));
+                FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId)));
+            }
+        }
+        #endregion
+
+        #region LoadBusyPicketsCommand
+        public ICommand LoadBusyPicketsCommand { get; }
+        private bool CanLoadBusyPicketsCommandExecute(object arg) => !(arg == null);
+        private void OnLoadBusyPicketsCommandExecuted(object arg)
+        {
+            BusyPickets.Clear();
+            using (SoftMasterDBContext context = new SoftMasterDBContext())
+            {
+                BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(selectedArea.AreaId)));
             }
         }
         #endregion
@@ -128,9 +160,9 @@ namespace SMTest.ViewModels
                 if (resultFlag) MessageBox.Show("Склад успешно добавлен", "Результат");
                 else MessageBox.Show("В процессе добавления склада произошли ошибки.", "Результат");
             }
-            else MessageBox.Show("Операция добавления склада отменена","Результат");
+            else MessageBox.Show("Операция добавления склада отменена", "Результат");
 
-            clearAllCollection(); 
+            clearAllCollection();
         }
         #endregion
 
@@ -148,7 +180,8 @@ namespace SMTest.ViewModels
                     context.SaveChanges();
                 }
                 //Обновление данных о складах
-                clearAllCollection();            
+                clearAllCollection();
+                MessageBox.Show("Склад успешно удален", "Результат");
             }
             catch (Exception e)
             {
@@ -158,10 +191,60 @@ namespace SMTest.ViewModels
         }
         #endregion
 
+        #region AddAreaCommand
+        public ICommand AddAreaCommand { get; }
+        private bool CanAddAreaCommandExecute(object arg) => !Equals((string)arg, "");
+        private void OnAddAreaCommandExecuted(object arg)
+        {
+            Area newArea = new Area() { Title = (string)arg, WareHouseId = selectedWareHouse.WareHouseId };
+            AreaName = "";
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    context.Areas.Add(newArea);
+                    context.SaveChanges();
+                }
+                clearAllCollection();
+                MessageBox.Show("Площадка успешно добавлена", "Результат");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("В процессе добавления площадки произошли ошибки.", "Результат");
+                MessageBox.Show(e.Message, "Ошибка");
+            }
+        }
+        #endregion
+
+        #region DeleteAreaCommand
+        public ICommand DeleteAreaCommand { get; }
+        private bool CanDeleteAreaCommandExecute(object arg) => !(selectedArea == null);
+        private void OnDeleteAreaCommandExecuted(object arg)
+        {
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    context.Areas.Remove((Area)arg);
+                    context.SaveChanges();
+                }
+
+                clearAllCollection();
+                MessageBox.Show("Площадка успешно удалена", "Результат");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("В процессе удаления площадки произошли ошибки.", "Результат");
+                MessageBox.Show(e.Message, "Результат");
+            }
+        }
+        #endregion
+
         #endregion
 
         #region Support Function
-        
+
+        #region ClearAllCollection
         /// <summary>
         /// Функция обнуления содержимого всех коллекция
         /// </summary>
@@ -171,7 +254,8 @@ namespace SMTest.ViewModels
             Areas.Clear();
             FreePickets.Clear();
         }
-        
+        #endregion
+
         #region AddWareHouse
         /// <summary>
         /// Функция добавления в БД нового склада
@@ -196,12 +280,11 @@ namespace SMTest.ViewModels
                 }
                 return true;
             }
-            catch (DbUpdateException e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Ошибка");
                 return false;
             }
-            
         }
         #endregion
 
@@ -218,7 +301,7 @@ namespace SMTest.ViewModels
             try
             {
                 FreePicket[] newFreePickets = new FreePicket[picketsCount];
-                for (int count=0; count < picketsCount; count++)
+                for (int count = 0; count < picketsCount; count++)
                 {
                     newFreePickets[count] = new FreePicket()
                     {
@@ -233,7 +316,7 @@ namespace SMTest.ViewModels
                 }
                 return true;
             }
-            catch (DbUpdateException e)
+            catch (Exception e)
             {
                 MessageBox.Show(e.Message, "Ошибка");
                 return false;
