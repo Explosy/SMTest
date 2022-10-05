@@ -259,10 +259,10 @@ namespace SMTest.ViewModels
                         IPicket picket = context.BusyPickets.Find(selectedPicket.PicketId);
                         BusyPicketsHistory oldPicket = new BusyPicketsHistory()
                         {
-                            Cargo = selectedPicket.Cargo,
-                            PicketNumber = selectedPicket.PicketNumber,
-                            AreaId = ((BusyPicket)selectedPicket).AreaId,
-                            DateStart = selectedPicket.DateStart
+                            Cargo = picket.Cargo,
+                            PicketNumber = picket.PicketNumber,
+                            AreaId = ((BusyPicket)picket).AreaId,
+                            DateStart = picket.DateStart
                         };
                         context.BusyPicketsHistories.Add(oldPicket);
                         picket.Cargo = int.Parse((string)arg);
@@ -273,10 +273,10 @@ namespace SMTest.ViewModels
                         IPicket picket = context.FreePickets.Find(selectedPicket.PicketId);
                         FreePicketsHistory oldPicket = new FreePicketsHistory()
                         {
-                            Cargo = selectedPicket.Cargo,
-                            PicketNumber = selectedPicket.PicketNumber,
-                            WareHouseId = ((FreePicket)selectedPicket).WareHouseId,
-                            DateStart = selectedPicket.DateStart
+                            Cargo = picket.Cargo,
+                            PicketNumber = picket.PicketNumber,
+                            WareHouseId = ((FreePicket)picket).WareHouseId,
+                            DateStart = picket.DateStart
                         };
                         context.FreePicketsHistories.Add(oldPicket);
                         picket.Cargo = int.Parse((string)arg);
