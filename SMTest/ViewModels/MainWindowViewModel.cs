@@ -87,7 +87,7 @@ namespace SMTest.ViewModels
             AddAreaCommand = new ActionCommand(OnAddAreaCommandExecuted, CanAddAreaCommandExecute);
             DeleteAreaCommand = new ActionCommand(OnDeleteAreaCommandExecuted, CanDeleteAreaCommandExecute);
             #endregion
-            
+
             ChangePicketCargoCommand = new ActionCommand(OnChangePicketCargoCommandExecuted, CanChangePicketCargoCommandExecute);
 
             #endregion
@@ -129,14 +129,7 @@ namespace SMTest.ViewModels
             FreePickets.Clear();
             using (SoftMasterDBContext context = new SoftMasterDBContext())
             {
-
-                //var newFreePicketsData = context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId));
-
-                //var newFreePicketsData = context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId))
-                //                                            .GroupBy(p => p.PicketNumber)
-                //                                            .Select(g => g.OrderByDescending(p => p.DateStart)
-                //                                                          .First());
-                //if (newFreePicketsData.Any()) FreePickets.AddRange(newFreePicketsData);
+                FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId)));
             }
         }
         #endregion
@@ -263,21 +256,31 @@ namespace SMTest.ViewModels
                 {
                     if (selectedPicket is BusyPicket)
                     {
-                        BusyPicket newPicket = new BusyPicket()
+                        IPicket picket = context.BusyPickets.Find(selectedPicket.PicketId);
+                        BusyPicketsHistory oldPicket = new BusyPicketsHistory()
                         {
-                            Cargo = int.Parse((string)arg),
+                            Cargo = selectedPicket.Cargo,
                             PicketNumber = selectedPicket.PicketNumber,
-                            AreaId = ((BusyPicket)selectedPicket).AreaId
+                            AreaId = ((BusyPicket)selectedPicket).AreaId,
+                            DateStart = selectedPicket.DateStart
                         };
+                        context.BusyPicketsHistories.Add(oldPicket);
+                        picket.Cargo = int.Parse((string)arg);
+                        picket.DateStart = DateTime.Now;
                     }
                     else
                     {
-                        FreePicket newPicket = new FreePicket()
+                        IPicket picket = context.FreePickets.Find(selectedPicket.PicketId);
+                        FreePicketsHistory oldPicket = new FreePicketsHistory()
                         {
-                            Cargo = int.Parse((string)arg),
+                            Cargo = selectedPicket.Cargo,
                             PicketNumber = selectedPicket.PicketNumber,
-                            WareHouseId = ((FreePicket)selectedPicket).WareHouseId
+                            WareHouseId = ((FreePicket)selectedPicket).WareHouseId,
+                            DateStart = selectedPicket.DateStart
                         };
+                        context.FreePicketsHistories.Add(oldPicket);
+                        picket.Cargo = int.Parse((string)arg);
+                        picket.DateStart = DateTime.Now;
                     }
                     context.SaveChanges();
                     SelectedPicket = null;

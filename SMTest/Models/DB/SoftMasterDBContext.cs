@@ -19,7 +19,9 @@ namespace SMTest.Models.DB
 
         public virtual DbSet<Area> Areas { get; set; }
         public virtual DbSet<BusyPicket> BusyPickets { get; set; }
+        public virtual DbSet<BusyPicketsHistory> BusyPicketsHistories { get; set; }
         public virtual DbSet<FreePicket> FreePickets { get; set; }
+        public virtual DbSet<FreePicketsHistory> FreePicketsHistories { get; set; }
         public virtual DbSet<WareHouse> WareHouses { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -64,6 +66,20 @@ namespace SMTest.Models.DB
                     .HasConstraintName("FK_BusyPickets_Areas");
             });
 
+            modelBuilder.Entity<BusyPicketsHistory>(entity =>
+            {
+                entity.HasKey(e => e.PicketId)
+                    .HasName("PK__BusyPick__4F2F1E464396A582");
+
+                entity.ToTable("BusyPicketsHistory");
+
+                entity.Property(e => e.DateEnd)
+                    .HasColumnName("Date_end")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.DateStart).HasColumnName("Date_start");
+            });
+
             modelBuilder.Entity<FreePicket>(entity =>
             {
                 entity.HasKey(e => e.PicketId)
@@ -77,6 +93,20 @@ namespace SMTest.Models.DB
                     .WithMany(p => p.FreePickets)
                     .HasForeignKey(d => d.WareHouseId)
                     .HasConstraintName("FK_FreePickets_WareHouses");
+            });
+
+            modelBuilder.Entity<FreePicketsHistory>(entity =>
+            {
+                entity.HasKey(e => e.PicketId)
+                    .HasName("PK__FreePick__4F2F1E46C9C4C3C5");
+
+                entity.ToTable("FreePicketsHistory");
+
+                entity.Property(e => e.DateEnd)
+                    .HasColumnName("Date_end")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.DateStart).HasColumnName("Date_start");
             });
 
             modelBuilder.Entity<WareHouse>(entity =>
