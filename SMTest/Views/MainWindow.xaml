@@ -11,6 +11,7 @@
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition MaxWidth="300"/>
@@ -77,8 +78,8 @@
                 <ListBox ItemsSource="{Binding BusyPickets}" DisplayMemberPath="PicketNumber" SelectedItem="{Binding SelectedPicket}"/>
             </GroupBox>
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Command=""
-                        CommandParameter=""
+                <Button Command="{Binding FreeToBusyPicketMoveCommand}"
+                        CommandParameter="{Binding SelectedPicket}"
                         Style="{StaticResource SquareButton}">
                     <fa:ImageAwesome Icon="Solid_ArrowUp" Height="15"></fa:ImageAwesome>
                 </Button>
@@ -96,11 +97,11 @@
                 <ListBox ItemsSource="{Binding FreePickets}" SelectedItem="{Binding SelectedPicket}" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
         </Grid>
-        <UniformGrid Grid.Column="2" Rows="1">
+        <UniformGrid Grid.Column="2" Rows="2">
             <StackPanel>
                 <StackPanel x:Name="AreaInfoPanel">
                     <TextBlock Text="Информация по выбранной площадке"/>
-                    <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
+                    <TextBlock Text="{Binding SelectedArea.Title}" Style="{StaticResource DefaultTextBlock}"/>
                     <TextBlock Text="Общий вес груза (т)" />
                     <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
                     <TextBlock Text="Пикеты" />
@@ -119,6 +120,13 @@
                                 Style="{StaticResource DefaultButton}"/>
                     </StackPanel>
                 </Border>
+            </StackPanel>
+            <StackPanel>
+                <DatePicker SelectedDate="{Binding SelectedDate}"/>
+                <Button Content="Показать данные на указанную дату"
+                                Command="{Binding ShowHistoryCommand}"
+                                CommandParameter="{Binding SelectedDate}"
+                                Style="{StaticResource DefaultButton}"/>
             </StackPanel>
         </UniformGrid>
     </Grid>

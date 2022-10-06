@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Input;
 using Prism.Mvvm;
 using SMTest.Models;
 using SMTest.Models.DB;
+using System.Linq;
 using SMTest.Views;
+using System.Windows;
+using System.Windows.Input;
 
 namespace SMTest.ViewModels
 {
@@ -45,6 +45,7 @@ namespace SMTest.ViewModels
             set
             {
                 SetProperty(ref selectedArea, value);
+                BusyPickets.Clear();
             }
         }
 
@@ -65,6 +66,15 @@ namespace SMTest.ViewModels
         }
 
         #endregion
+
+        #region DatePicker
+        private DateTime selectedDate = new DateTime(2022, 10, 4, 14, 0, 0);        //DateTime.Now;
+        public DateTime SelectedDate
+        {
+            get => selectedDate;
+            set => SetProperty(ref selectedDate, value);
+        }
+        #endregion
         public MainWindowViewModel()
         {
             WareHouses = new ObservableCollection<WareHouse>();
@@ -73,7 +83,7 @@ namespace SMTest.ViewModels
             FreePickets = new ObservableCollection<FreePicket>();
 
             #region Create Commands
-
+            
             #region Load Commands
             LoadWareHouseCommand = new ActionCommand(OnLoadWareHouseCommandExecuted, CanLoadWareHouseCommandExecute);
             LoadAreasCommand = new ActionCommand(OnLoadAreasCommandExecuted, CanLoadAreasCommandExecute);
@@ -90,6 +100,11 @@ namespace SMTest.ViewModels
 
             ChangePicketCargoCommand = new ActionCommand(OnChangePicketCargoCommandExecuted, CanChangePicketCargoCommandExecute);
 
+            FreeToBusyPicketMoveCommand = new ActionCommand(OnFreeToBusyPicketMoveCommandExecuted, CanFreeToBusyPicketMoveCommandExecute);
+
+            BusyToFreePicketMoveCommand = new ActionCommand(OnBusyToFreePicketMoveCommandExecuted, CanBusyToFreePicketMoveCommandExecute);
+
+            ShowHistoryCommand = new ActionCommand(OnShowHistoryCommandExecuted, CanShowHistoryCommandExecute);
             #endregion
         }
 
@@ -247,16 +262,16 @@ namespace SMTest.ViewModels
 
         #region ChangePicketCargoCommand
         public ICommand ChangePicketCargoCommand { get; }
-        private bool CanChangePicketCargoCommandExecute(object arg) => !(selectedPicket == null);
+        private bool CanChangePicketCargoCommandExecute(object arg) => !(SelectedPicket == null);
         private void OnChangePicketCargoCommandExecuted(object arg)
         {
             try
             {
                 using (SoftMasterDBContext context = new SoftMasterDBContext())
                 {
-                    if (selectedPicket is BusyPicket)
+                    if (SelectedPicket is BusyPicket)
                     {
-                        IPicket picket = context.BusyPickets.Find(selectedPicket.PicketId);
+                        IPicket picket = context.BusyPickets.Find(SelectedPicket.PicketId);
                         BusyPicketsHistory oldPicket = new BusyPicketsHistory()
                         {
                             Cargo = picket.Cargo,
@@ -268,9 +283,9 @@ namespace SMTest.ViewModels
                         picket.Cargo = int.Parse((string)arg);
                         picket.DateStart = DateTime.Now;
                     }
-                    else
+                    else if (SelectedPicket is FreePicket)
                     {
-                        IPicket picket = context.FreePickets.Find(selectedPicket.PicketId);
+                        IPicket picket = context.FreePickets.Find(SelectedPicket.PicketId);
                         FreePicketsHistory oldPicket = new FreePicketsHistory()
                         {
                             Cargo = picket.Cargo,
@@ -295,6 +310,124 @@ namespace SMTest.ViewModels
         }
         #endregion
 
+        #region FreeToBusyPicketMoveCommand
+        public ICommand FreeToBusyPicketMoveCommand { get; }
+        private bool CanFreeToBusyPicketMoveCommandExecute(object arg)
+        {
+            if (SelectedArea == null) return false;
+            if (SelectedArea.BusyPickets.Count == 0) return true;
+            if (SelectedPicket is FreePicket)
+            {
+                var lastPicket = SelectedArea.BusyPickets.Max(p => p.PicketNumber);
+                var firstPicket = SelectedArea.BusyPickets.Min(p => p.PicketNumber);
+                if (SelectedPicket.PicketNumber - lastPicket == 1 ||
+                    firstPicket - SelectedPicket.PicketNumber == 1) return true;
+            }
+            return false;
+        }
+        private void OnFreeToBusyPicketMoveCommandExecuted(object arg)
+        {
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    FreePicket picket = context.FreePickets.Find(SelectedPicket.PicketId);
+                    var newBusyPicket = new BusyPicket()
+                    {
+                        AreaId = selectedArea.AreaId,
+                        Cargo = picket.Cargo,
+                        PicketNumber = picket.PicketNumber
+                    };
+                    context.BusyPickets.Add(newBusyPicket);
+
+                    FreePicketsHistory oldPicket = new FreePicketsHistory()
+                    {
+                        Cargo = picket.Cargo,
+                        PicketNumber = picket.PicketNumber,
+                        WareHouseId = picket.WareHouseId,
+                        DateStart = picket.DateStart
+                    };
+                    context.FreePicketsHistories.Add(oldPicket);
+
+                    context.FreePickets.Remove(picket);
+                    context.SaveChanges();
+                }
+                MessageBox.Show("Пикет успешно перемещен", "Результат");
+                SelectedPicket = null;
+                BusyPickets.Clear();
+                FreePickets.Clear();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("В процессе перемещения пикета произошли ошибки.", "Результат");
+                MessageBox.Show(e.Message, "Результат");
+            }
+        }
+
+        #endregion
+
+        #region BusyToFreePicketMove
+        public ICommand BusyToFreePicketMoveCommand { get; }
+        private bool CanBusyToFreePicketMoveCommandExecute(object arg)
+        {
+            if (SelectedPicket is BusyPicket && SelectedWareHouse != null)
+            {
+                var lastPicket = SelectedArea.BusyPickets.Max(p => p.PicketNumber);
+                var firstPicket = SelectedArea.BusyPickets.Min(p => p.PicketNumber);
+                if (SelectedPicket.PicketNumber == lastPicket ||
+                    SelectedPicket.PicketNumber == firstPicket) return true;
+            }
+            return false;
+        }
+        private void OnBusyToFreePicketMoveCommandExecuted(object arg)
+        {
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    BusyPicket picket = context.BusyPickets.Find(SelectedPicket.PicketId);
+                    var newFreePicket = new FreePicket()
+                    {
+                        WareHouseId = selectedArea.WareHouseId,
+                        Cargo = picket.Cargo,
+                        PicketNumber = picket.PicketNumber
+                    };
+                    context.FreePickets.Add(newFreePicket);
+
+                    BusyPicketsHistory oldPicket = new BusyPicketsHistory()
+                    {
+                        Cargo = picket.Cargo,
+                        PicketNumber = picket.PicketNumber,
+                        AreaId = picket.AreaId,
+                        DateStart = picket.DateStart
+                    };
+                    context.BusyPicketsHistories.Add(oldPicket);
+
+                    context.BusyPickets.Remove(picket);
+                    context.SaveChanges();
+                }
+                MessageBox.Show("Пикет успешно перемещен", "Результат");
+                SelectedPicket = null;
+                BusyPickets.Clear();
+                FreePickets.Clear();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("В процессе перемещения пикета произошли ошибки.", "Результат");
+                MessageBox.Show(e.Message, "Результат");
+            }
+        }
+        #endregion
+
+        #region ShowHistoryCommand
+        public ICommand ShowHistoryCommand { get; }
+        private bool CanShowHistoryCommandExecute(object arg) => !(arg == null);
+        private void OnShowHistoryCommandExecuted(object arg)
+        {
+            HistoryWindow historyWindow = new HistoryWindow(SelectedDate);
+            historyWindow.Show();
+        }
+        #endregion
         #endregion
 
         #region Support Function
