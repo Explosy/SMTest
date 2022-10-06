@@ -5,17 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SMTest"
         xmlns:fa="http://schemas.fontawesome.com/icons/"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:vm="clr-namespace:SMTest.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="550" Width="800">
+        Title="MainWindow" MinHeight="550" MinWidth="850" Height="550" Width="850">
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="#FFBBAC97"/>
+            <GradientStop Color="#FFDAC9BA"/>
+            <GradientStop Color="#FFCCCCCC"/>
+            <GradientStop Color="#FFA0A0A0" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MaxWidth="300"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition MinWidth="300"/>
+            <ColumnDefinition MinWidth="300"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <UniformGrid Grid.Column="0" Rows="2">
@@ -26,10 +35,10 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
                         <Button Content="Добавить склад" Command="{Binding AddWareHouseCommand}"
                                                          CommandParameter="{Binding WareHouseName}"
-                                                         Style="{StaticResource DefaultButton}"/>
+                                                         Style="{StaticResource AddButton}"/>
                         <Button Content="Удалить склад" Command="{Binding DeleteWareHouseCommand}"
                                                         CommandParameter="{Binding SelectedWareHouse}"
-                                                        Style="{StaticResource DefaultButton}"/>
+                                                        Style="{StaticResource DeleteButton}" />
                     </StackPanel>
                 </StackPanel>
                 <Button DockPanel.Dock="Top" Content="Загрузить информацию о складах"
@@ -46,10 +55,10 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
                         <Button Content="Добавить площадку" Command="{Binding AddAreaCommand}"
                                                             CommandParameter="{Binding AreaName}"
-                                                            Style="{StaticResource DefaultButton}"/>
+                                                            Style="{StaticResource AddButton}"/>
                         <Button Content="Удалить площадку" Command="{Binding DeleteAreaCommand}"
                                                             CommandParameter="{Binding SelectedArea}"
-                                                            Style="{StaticResource DefaultButton}"/>
+                                                            Style="{StaticResource DeleteButton}"/>
                     </StackPanel>
                 </StackPanel>
                 <Button DockPanel.Dock="Top" Content="Загрузить информацию о площадках"
@@ -63,10 +72,10 @@
         </UniformGrid>
         <Grid  Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="50"/>
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -104,8 +113,6 @@
                     <TextBlock Text="{Binding SelectedArea.Title}" Style="{StaticResource DefaultTextBlock}"/>
                     <TextBlock Text="Общий вес груза (т)" />
                     <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
-                    <TextBlock Text="Пикеты" />
-                    <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
                 </StackPanel>
                 <Border BorderBrush="#7F000000" BorderThickness="0,0.5,0,0">
                     <StackPanel x:Name="PicketInfoPanel">
@@ -113,7 +120,7 @@
                         <TextBlock Text="{Binding SelectedPicket.PicketNumber}" Style="{StaticResource DefaultTextBlock}"/>
                         <TextBlock Text="Груз (т)" />
                         <TextBox x:Name="CargoValue" Style="{StaticResource DefaultTextBox}"
-                                                     Text="{Binding SelectedPicket.Cargo}" />
+                                                     Text="{Binding SelectedPicket.Cargo}" KeyDown="CargoValue_KeyDown" />
                         <Button Content="Сохранить данные о грузе"
                                 Command="{Binding ChangePicketCargoCommand}"
                                 CommandParameter="{Binding Text, ElementName=CargoValue}"
@@ -122,7 +129,7 @@
                 </Border>
             </StackPanel>
             <StackPanel>
-                <DatePicker SelectedDate="{Binding SelectedDate}"/>
+                <xctk:DateTimePickerBase Value="{Binding SelectedDate}"/>
                 <Button Content="Показать данные на указанную дату"
                                 Command="{Binding ShowHistoryCommand}"
                                 CommandParameter="{Binding SelectedDate}"

@@ -12,7 +12,7 @@ namespace SMTest.Views
         public HistoryWindow(DateTime date)
         {
             InitializeComponent();
-            DataContext = new HistoryWindowViewModel(new DateTime(2022, 10, 4, 14, 0, 0));
+            DataContext = new HistoryWindowViewModel(date);
         }
     }
 }

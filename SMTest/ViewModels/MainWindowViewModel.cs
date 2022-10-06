@@ -15,10 +15,10 @@ namespace SMTest.ViewModels
         #region WareHouse
         public ObservableCollection<WareHouse> WareHouses { get; set; }
 
-        private WareHouse selectedWareHouse;
         /// <summary>
-        /// Свойство, содержащее информацию о выбранном складе
+        /// Выбранный склад
         /// </summary>
+        private WareHouse selectedWareHouse;
         public WareHouse SelectedWareHouse
         {
             get => selectedWareHouse;
@@ -35,17 +35,35 @@ namespace SMTest.ViewModels
         #region Areas
         public ObservableCollection<Area> Areas { get; set; }
 
-        private Area selectedArea;
         /// <summary>
-        /// Свойство, содержащее информацию о выбранной площадке
+        /// Выбранная площадка
         /// </summary>
+        private Area selectedArea;
         public Area SelectedArea
         {
             get => selectedArea;
             set
             {
                 SetProperty(ref selectedArea, value);
-                BusyPickets.Clear();
+                if (value == null) return;
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    BusyPickets.Clear();
+                    BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(value.AreaId)));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Суммарный вес груза на площадке
+        /// </summary>
+        private string areaCargo = "";
+        public string AreaCargo
+        {
+            get => areaCargo;
+            set
+            {
+                SetProperty(ref areaCargo, value);
             }
         }
 
@@ -55,10 +73,10 @@ namespace SMTest.ViewModels
         public ObservableCollection<FreePicket> FreePickets { get; set; }
         public ObservableCollection<BusyPicket> BusyPickets { get; set; }
 
-        private IPicket selectedPicket;
         /// <summary>
-        /// Свойство, содержащее информацию о выбранном пикете
+        /// Выбранный пикет
         /// </summary>
+        private IPicket selectedPicket;
         public IPicket SelectedPicket
         {
             get => selectedPicket;
@@ -68,7 +86,10 @@ namespace SMTest.ViewModels
         #endregion
 
         #region DatePicker
-        private DateTime selectedDate = new DateTime(2022, 10, 4, 14, 0, 0);        //DateTime.Now;
+        /// <summary>
+        /// Выбранная пользователем дата для просмотра истории
+        /// </summary>
+        private DateTime selectedDate = DateTime.Now;
         public DateTime SelectedDate
         {
             get => selectedDate;
@@ -77,14 +98,18 @@ namespace SMTest.ViewModels
         #endregion
         public MainWindowViewModel()
         {
+            #region CreateCollection
+            //Создание коллекций для отображения складов, площадок, пикетов.
             WareHouses = new ObservableCollection<WareHouse>();
             Areas = new ObservableCollection<Area>();
             BusyPickets = new ObservableCollection<BusyPicket>();
             FreePickets = new ObservableCollection<FreePicket>();
+            #endregion
 
             #region Create Commands
-            
+
             #region Load Commands
+            //Команды загрузки данных из БД
             LoadWareHouseCommand = new ActionCommand(OnLoadWareHouseCommandExecuted, CanLoadWareHouseCommandExecute);
             LoadAreasCommand = new ActionCommand(OnLoadAreasCommandExecuted, CanLoadAreasCommandExecute);
             LoadFreePicketsCommand = new ActionCommand(OnLoadFreePicketsCommandExecuted, CanLoadFreePicketsCommandExecute);
@@ -92,6 +117,7 @@ namespace SMTest.ViewModels
             #endregion
 
             #region Add/Delete Commands
+            //Команды добавление/удаления объектов из БД
             AddWareHouseCommand = new ActionCommand(OnAddWareHouseCommandExecuted, CanAddWareHouseCommandExecute);
             DeleteWareHouseCommand = new ActionCommand(OnDeleteWareHouseCommandExecuted, CanDeleteWareHouseCommandExecute);
             AddAreaCommand = new ActionCommand(OnAddAreaCommandExecuted, CanAddAreaCommandExecute);
@@ -428,6 +454,7 @@ namespace SMTest.ViewModels
             historyWindow.Show();
         }
         #endregion
+        
         #endregion
 
         #region Support Function
@@ -516,6 +543,9 @@ namespace SMTest.ViewModels
 
         #region TextBoxValue
         private string wareHouseName = "";
+        /// <summary>
+        /// Введенное пользователем имя для нового склада
+        /// </summary>
         public string WareHouseName
         {
             get => wareHouseName;
@@ -523,6 +553,9 @@ namespace SMTest.ViewModels
         }
 
         private string areaName = "";
+        /// <summary>
+        /// Введенное пользователем имя для новой площадки
+        /// </summary>
         public string AreaName
         {
             get => areaName;
