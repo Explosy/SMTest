@@ -24,10 +24,10 @@ namespace SMTest.ViewModels
             get => selectedWareHouse;
             set
             {
+                clearAllCollection();
                 SetProperty(ref selectedWareHouse, value);
-                Areas.Clear();
-                BusyPickets.Clear();
-                FreePickets.Clear();
+                if (value == null) return;
+                UpdateWareHouseInfo(value);
             }
         }
         #endregion
@@ -45,12 +45,12 @@ namespace SMTest.ViewModels
             set
             {
                 SetProperty(ref selectedArea, value);
-                if (value == null) return;
-                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                if (value == null)
                 {
-                    BusyPickets.Clear();
-                    BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(value.AreaId)));
+                    AreaCargo = "";
+                    return;
                 }
+                UpdateAreaInfo(value);
             }
         }
 
@@ -66,7 +66,6 @@ namespace SMTest.ViewModels
                 SetProperty(ref areaCargo, value);
             }
         }
-
         #endregion
 
         #region Pickets
@@ -108,14 +107,9 @@ namespace SMTest.ViewModels
 
             #region Create Commands
 
-            #region Load Commands
-            //Команды загрузки данных из БД
+            //Команды загрузки данных о складах из БД
             LoadWareHouseCommand = new ActionCommand(OnLoadWareHouseCommandExecuted, CanLoadWareHouseCommandExecute);
-            LoadAreasCommand = new ActionCommand(OnLoadAreasCommandExecuted, CanLoadAreasCommandExecute);
-            LoadFreePicketsCommand = new ActionCommand(OnLoadFreePicketsCommandExecuted, CanLoadFreePicketsCommandExecute);
-            LoadBusyPicketsCommand = new ActionCommand(OnLoadBusyPicketsCommandExecuted, CanLoadBusyPicketsCommandExecute);
-            #endregion
-
+            
             #region Add/Delete Commands
             //Команды добавление/удаления объектов из БД
             AddWareHouseCommand = new ActionCommand(OnAddWareHouseCommandExecuted, CanAddWareHouseCommandExecute);
@@ -145,45 +139,6 @@ namespace SMTest.ViewModels
             using (SoftMasterDBContext context = new SoftMasterDBContext())
             {
                 WareHouses.AddRange(context.WareHouses);
-            }
-        }
-        #endregion
-
-        #region LoadAreasCommand
-        public ICommand LoadAreasCommand { get; }
-        private bool CanLoadAreasCommandExecute(object arg) => !(arg == null);
-        private void OnLoadAreasCommandExecuted(object arg)
-        {
-            Areas.Clear();
-            using (SoftMasterDBContext context = new SoftMasterDBContext())
-            {
-                Areas.AddRange(context.Areas.Where(a => a.WareHouseId.Equals(selectedWareHouse.WareHouseId)));
-            }
-        }
-        #endregion
-
-        #region LoadFreePicketsCommand
-        public ICommand LoadFreePicketsCommand { get; }
-        private bool CanLoadFreePicketsCommandExecute(object arg) => !(arg == null);
-        private void OnLoadFreePicketsCommandExecuted(object arg)
-        {
-            FreePickets.Clear();
-            using (SoftMasterDBContext context = new SoftMasterDBContext())
-            {
-                FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(selectedWareHouse.WareHouseId)));
-            }
-        }
-        #endregion
-
-        #region LoadBusyPicketsCommand
-        public ICommand LoadBusyPicketsCommand { get; }
-        private bool CanLoadBusyPicketsCommandExecute(object arg) => !(arg == null);
-        private void OnLoadBusyPicketsCommandExecuted(object arg)
-        {
-            BusyPickets.Clear();
-            using (SoftMasterDBContext context = new SoftMasterDBContext())
-            {
-                BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(selectedArea.AreaId)));
             }
         }
         #endregion
@@ -459,19 +414,16 @@ namespace SMTest.ViewModels
 
         #region Support Function
 
-        #region ClearAllCollection
         /// <summary>
         /// Функция обнуления содержимого всех коллекция
         /// </summary>
         private void clearAllCollection()
         {
-            WareHouses.Clear();
             Areas.Clear();
             FreePickets.Clear();
+            BusyPickets.Clear();
         }
-        #endregion
-
-        #region AddWareHouse
+        
         /// <summary>
         /// Функция добавления в БД нового склада
         /// </summary>
@@ -501,9 +453,7 @@ namespace SMTest.ViewModels
                 return false;
             }
         }
-        #endregion
 
-        #region AddFreePicket
         /// <summary>
         /// Функция добавления в БД свободных пикетов при создании нового склада
         /// </summary>
@@ -537,7 +487,49 @@ namespace SMTest.ViewModels
                 return false;
             }
         }
-        #endregion
+        /// <summary>
+        /// Функция обновления данных о складе
+        /// </summary>
+        /// <param name="wareHouse">Объект склада, о котором нужно обновить информацию</param>
+        private void UpdateWareHouseInfo(WareHouse wareHouse)
+        {
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(wareHouse.WareHouseId)));
+                    Areas.AddRange(context.Areas.Where(a => a.WareHouseId.Equals(wareHouse.WareHouseId)));
+                }
+            }
+            catch (Exception e)
+            {
+                FreePickets.Add(new FreePicket() { PicketNumber = 0 });
+                Areas.Add(new Area() { Title = "Данные не загружены" });
+                MessageBox.Show(e.Message, "Ошибка");
+            }
+            
+        }
+        /// <summary>
+        /// Функция обновления данных о площадке
+        /// </summary>
+        /// <param name="area">Объект площадки, о которой нужно обновить информацию</param>
+        private void UpdateAreaInfo(Area area)
+        {
+            try
+            {
+                using (SoftMasterDBContext context = new SoftMasterDBContext())
+                {
+                    BusyPickets.Clear();
+                    BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(area.AreaId)));
+                    AreaCargo = BusyPickets.Sum(p => p.Cargo).ToString();
+                }
+            }
+            catch (Exception e)
+            {
+                BusyPickets.Add(new BusyPicket() { PicketNumber = 0 });
+                MessageBox.Show(e.Message, "Ошибка");
+            }
+        }
 
         #endregion
 

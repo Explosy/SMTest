@@ -61,10 +61,6 @@
                                                             Style="{StaticResource DeleteButton}"/>
                     </StackPanel>
                 </StackPanel>
-                <Button DockPanel.Dock="Top" Content="Загрузить информацию о площадках"
-                        Command="{Binding LoadAreasCommand}"
-                        CommandParameter="{Binding SelectedWareHouse}"
-                        Style="{StaticResource LoadButton}"/>
                 <GroupBox Header="Площадки">
                     <ListBox ItemsSource="{Binding Areas}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedArea}"/>
                 </GroupBox>
@@ -72,51 +68,44 @@
         </UniformGrid>
         <Grid  Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="50"/>
-                <RowDefinition Height="40"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Button Content="Загрузить информацию о пикетах"
-                    Command="{Binding LoadBusyPicketsCommand}"
-                    CommandParameter="{Binding SelectedArea}"
-                    Style="{StaticResource LoadButton}"/>
-            <GroupBox Grid.Row="1" Header="Пикеты площадки">
+            <GroupBox Header="Пикеты площадки">
                 <ListBox ItemsSource="{Binding BusyPickets}" DisplayMemberPath="PicketNumber" SelectedItem="{Binding SelectedPicket}"/>
             </GroupBox>
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Command="{Binding FreeToBusyPicketMoveCommand}"
                         CommandParameter="{Binding SelectedPicket}"
                         Style="{StaticResource SquareButton}">
                     <fa:ImageAwesome Icon="Solid_ArrowUp" Height="15"></fa:ImageAwesome>
                 </Button>
-                <Button Command=""
-                        CommandParameter=""
+                <Button Command="{Binding BusyToFreePicketMoveCommand}"
+                        CommandParameter="{Binding SelectedPicket}"
                         Style="{StaticResource SquareButton}">
                     <fa:ImageAwesome Icon="Solid_ArrowDown" Height="15"></fa:ImageAwesome>
                 </Button>
             </StackPanel>
-            <Button Grid.Row="3"  Content="Загрузить информацию о пикетах"
-                    Command="{Binding LoadFreePicketsCommand}"
-                    CommandParameter="{Binding SelectedWareHouse}"
-                    Style="{StaticResource LoadButton}"/>
-            <GroupBox Grid.Row="4" Header="Свободные пикеты">
+            
+            <GroupBox Grid.Row="2" Header="Свободные пикеты">
                 <ListBox ItemsSource="{Binding FreePickets}" SelectedItem="{Binding SelectedPicket}" DisplayMemberPath="PicketNumber"/>
             </GroupBox>
         </Grid>
+        
         <UniformGrid Grid.Column="2" Rows="2">
             <StackPanel>
                 <StackPanel x:Name="AreaInfoPanel">
-                    <TextBlock Text="Информация по выбранной площадке"/>
+                    <TextBlock Text="Информация по выбранной площадке" FontWeight="DemiBold"/>
                     <TextBlock Text="{Binding SelectedArea.Title}" Style="{StaticResource DefaultTextBlock}"/>
                     <TextBlock Text="Общий вес груза (т)" />
-                    <TextBlock Text="" Style="{StaticResource DefaultTextBlock}"/>
+                    <TextBlock Text="{Binding AreaCargo}" Style="{StaticResource DefaultTextBlock}"/>
                 </StackPanel>
                 <Border BorderBrush="#7F000000" BorderThickness="0,0.5,0,0">
                     <StackPanel x:Name="PicketInfoPanel">
-                        <TextBlock Text="Информация по выбранному пикету"/>
+                        <TextBlock Text="Информация по выбранному пикету" FontWeight="DemiBold"/>
                         <TextBlock Text="{Binding SelectedPicket.PicketNumber}" Style="{StaticResource DefaultTextBlock}"/>
                         <TextBlock Text="Груз (т)" />
                         <TextBox x:Name="CargoValue" Style="{StaticResource DefaultTextBox}"
