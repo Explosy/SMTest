@@ -296,11 +296,11 @@ namespace SMTest.ViewModels
         private bool CanFreeToBusyPicketMoveCommandExecute(object arg)
         {
             if (SelectedArea == null) return false;
-            if (SelectedArea.BusyPickets.Count == 0) return true;
+            if (BusyPickets.Count == 0) return true;
             if (SelectedPicket is FreePicket)
             {
-                var lastPicket = SelectedArea.BusyPickets.Max(p => p.PicketNumber);
-                var firstPicket = SelectedArea.BusyPickets.Min(p => p.PicketNumber);
+                var lastPicket = BusyPickets.Max(p => p.PicketNumber);
+                var firstPicket = BusyPickets.Min(p => p.PicketNumber);
                 if (SelectedPicket.PicketNumber - lastPicket == 1 ||
                     firstPicket - SelectedPicket.PicketNumber == 1) return true;
             }
@@ -335,8 +335,8 @@ namespace SMTest.ViewModels
                 }
                 MessageBox.Show("Пикет успешно перемещен", "Результат");
                 SelectedPicket = null;
-                BusyPickets.Clear();
-                FreePickets.Clear();
+                clearAllCollection();
+                UpdateWareHouseInfo(SelectedWareHouse);
             }
             catch (Exception e)
             {
@@ -353,8 +353,8 @@ namespace SMTest.ViewModels
         {
             if (SelectedPicket is BusyPicket && SelectedWareHouse != null)
             {
-                var lastPicket = SelectedArea.BusyPickets.Max(p => p.PicketNumber);
-                var firstPicket = SelectedArea.BusyPickets.Min(p => p.PicketNumber);
+                var lastPicket = BusyPickets.Max(p => p.PicketNumber);
+                var firstPicket = BusyPickets.Min(p => p.PicketNumber);
                 if (SelectedPicket.PicketNumber == lastPicket ||
                     SelectedPicket.PicketNumber == firstPicket) return true;
             }
@@ -389,8 +389,8 @@ namespace SMTest.ViewModels
                 }
                 MessageBox.Show("Пикет успешно перемещен", "Результат");
                 SelectedPicket = null;
-                BusyPickets.Clear();
-                FreePickets.Clear();
+                clearAllCollection();
+                UpdateWareHouseInfo(SelectedWareHouse);
             }
             catch (Exception e)
             {
@@ -497,7 +497,7 @@ namespace SMTest.ViewModels
             {
                 using (SoftMasterDBContext context = new SoftMasterDBContext())
                 {
-                    FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(wareHouse.WareHouseId)));
+                    FreePickets.AddRange(context.FreePickets.Where(p => p.WareHouseId.Equals(wareHouse.WareHouseId)).OrderBy(p => p.PicketNumber));
                     Areas.AddRange(context.Areas.Where(a => a.WareHouseId.Equals(wareHouse.WareHouseId)));
                 }
             }
@@ -520,7 +520,7 @@ namespace SMTest.ViewModels
                 using (SoftMasterDBContext context = new SoftMasterDBContext())
                 {
                     BusyPickets.Clear();
-                    BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(area.AreaId)));
+                    BusyPickets.AddRange(context.BusyPickets.Where(p => p.AreaId.Equals(area.AreaId)).OrderBy(p => p.PicketNumber));
                     AreaCargo = BusyPickets.Sum(p => p.Cargo).ToString();
                 }
             }
