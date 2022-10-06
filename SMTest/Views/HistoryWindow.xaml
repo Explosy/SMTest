@@ -4,9 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SMTest.Views"
-        xmlns:fa="http://schemas.fontawesome.com/icons/"
         mc:Ignorable="d"
-        Title="HistoryWindow" MinHeight="550" MinWidth="900" Height="550" Width="900">
+        Title="HistoryWindow" MinHeight="450" MinWidth="750" Height="450" Width="750">
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
             <GradientStop Color="#FFBBAC97"/>
@@ -17,45 +16,24 @@
     </Window.Background>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="300"/>
-            <ColumnDefinition Width="50"/>
-            <ColumnDefinition MinWidth="300"/>
+            <ColumnDefinition MinWidth="200"/>
+            <ColumnDefinition MinWidth="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="40"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
+        <UniformGrid Rows="2">
+
             <GroupBox Header="Склады">
                 <ListBox ItemsSource="{Binding WareHouses}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedWareHouse}"/>
             </GroupBox>
-            <Button Grid.Row="1" Command="{Binding LoadAreasCommand}"
-                    CommandParameter="{Binding SelectedWareHouse}"
-                    Style="{StaticResource SquareButton}">
-                <fa:ImageAwesome Icon="Solid_ArrowDown" Height="15"></fa:ImageAwesome>
-            </Button>
+            
             <GroupBox Grid.Row="2" Header="Площадки">
                 <ListBox ItemsSource="{Binding Areas}" DisplayMemberPath="Title" SelectedItem="{Binding SelectedArea}"/>
             </GroupBox>
-        </Grid>
-        <UniformGrid Grid.Column="1" Rows="2">
-            <Button Grid.Row="1" Command="{Binding LoadFreePicketsCommand}"
-                    CommandParameter="{Binding SelectedWareHouse}"
-                    Style="{StaticResource SquareButton}">
-                <fa:ImageAwesome Icon="Solid_ArrowRight" Height="15"></fa:ImageAwesome>
-            </Button>
-            <Button Grid.Row="1" Command="{Binding LoadBusyPicketsCommand}"
-                    CommandParameter="{Binding SelectedArea}"
-                    Style="{StaticResource SquareButton}">
-                <fa:ImageAwesome Icon="Solid_ArrowRight" Height="15"></fa:ImageAwesome>
-            </Button>
+            
         </UniformGrid>
-  
-        <UniformGrid Grid.Column="2" Rows="2">
+
+        <UniformGrid Grid.Column="1" Rows="2">
             <GroupBox Header="Свободные пикеты">
                 <ListBox ItemsSource="{Binding FreePickets}" DisplayMemberPath="PicketNumber" SelectedItem="{Binding SelectedPicket}"/>
             </GroupBox>

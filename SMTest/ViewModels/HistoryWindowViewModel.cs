@@ -32,10 +32,10 @@ namespace SMTest.ViewModels
             get => selectedWareHouse;
             set
             {
+                clearAllCollection();
                 SetProperty(ref selectedWareHouse, value);
-                BusyPickets.Clear();
-                Areas.Clear();
-                FreePickets.Clear();
+                if (value == null) return;
+                UpdateWareHouseInfo(value);
             }
         }
         #endregion
@@ -54,7 +54,8 @@ namespace SMTest.ViewModels
             {
                 BusyPickets.Clear();
                 SetProperty(ref selectedArea, value);
-                AreaCargo = AllBusyPickets.Where(p => p.AreaId == value?.AreaId).Sum(p => p.Cargo).ToString();
+                if (value == null) return;
+                UpdateAreaInfo(value);
             }
         }
         /// <summary>
@@ -145,6 +146,39 @@ namespace SMTest.ViewModels
         }
         #endregion
 
+        #endregion
+
+        #region Support Function
+        /// <summary>
+        /// Функция обнуления содержимого всех коллекция
+        /// </summary>
+        private void clearAllCollection()
+        {
+            Areas.Clear();
+            FreePickets.Clear();
+            BusyPickets.Clear();
+        }
+
+        /// <summary>
+        /// Функция обновления данных о складе
+        /// </summary>
+        /// <param name="wareHouse">Объект склада, о котором нужно обновить информацию</param>
+        private void UpdateWareHouseInfo(WareHouse wareHouse)
+        {
+            FreePickets.AddRange(AllFreePickets.Where(p => p.WareHouseId.Equals(wareHouse.WareHouseId)).OrderBy(p => p.PicketNumber));
+            Areas.AddRange(AllAreas.Where(a => a.WareHouseId.Equals(wareHouse.WareHouseId)));
+        }
+
+        /// <summary>
+        /// Функция обновления данных о площадке
+        /// </summary>
+        /// <param name="area">Объект площадки, о которой нужно обновить информацию</param>
+        private void UpdateAreaInfo(Area area)
+        {
+            BusyPickets.Clear();
+            BusyPickets.AddRange(AllBusyPickets.Where(p => p.AreaId.Equals(area.AreaId)).OrderBy(p => p.PicketNumber));
+            AreaCargo = BusyPickets.Sum(p => p.Cargo).ToString();
+        }
         #endregion
     }
 }
